@@ -3,7 +3,6 @@ import os
 from backend.video_generator import generate_video
 from backend.model_trainer import train_model
 from backend.chat_engine import chat_response
-
 app = Flask(__name__)
 
 # 首页

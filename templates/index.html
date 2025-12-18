@@ -3,97 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <title>DATA HAMMER GROUP TALKING SYSTEM</title>
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Lato:wght@400;600&display=swap" rel="stylesheet">
+    <!-- 引入外部 CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        body.main-bg {
-            background: radial-gradient(circle at center, #0a0a0a 0%, #1b1b1b 100%);
-            color: #fff;
-            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        .container {
-            text-align: center;
-            padding: 40px 60px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            box-shadow: 0 0 40px rgba(0, 200, 255, 0.2);
-            backdrop-filter: blur(10px);
-            animation: fadeIn 1.2s ease;
-        }
-
-        h1 {
-            font-size: 2.2rem;
-            letter-spacing: 2px;
-            color: #00e5ff;
-            margin-bottom: 40px;
-            text-shadow: 0 0 15px rgba(0, 229, 255, 0.6);
-            animation: glowText 3s infinite alternate;
-        }
-
-        .button-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .button-container button {
-            background: linear-gradient(90deg, #00c6ff, #0072ff);
-            border: none;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-            padding: 14px 0;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
-        }
-
-        .button-container button:hover {
-            transform: scale(1.05);
-            background: linear-gradient(90deg, #0072ff, #00c6ff);
-            box-shadow: 0 0 25px rgba(0, 229, 255, 0.6);
-        }
-
-        .button-container button:active {
-            transform: scale(0.98);
-        }
-
-        @keyframes glowText {
-            from { text-shadow: 0 0 10px #00e5ff; }
-            to { text-shadow: 0 0 25px #00ffff, 0 0 50px #00ffff; }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 可选底部标识 */
-        .footer {
-            position: absolute;
-            bottom: 15px;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.4);
-        }
-    </style>
 </head>
-<body class="main-bg">
+<body id="mainBody" class="home dark-theme">
+    <button class="theme-toggle" onclick="toggleTheme()">切换皮肤</button>
     <div class="container">
         <h1>DATA HAMMER GROUP<br>TALKING SYSTEM</h1>
         <div class="button-container">
-            <button onclick="window.location.href='/model_training'">训练模型</button>
-            <button onclick="window.location.href='/video_generation'">视频生成</button>
-            <button onclick="window.location.href='/chat_system'">人机对话</button>
+            <button class="custom-btn btn" onclick="window.location.href='/model_training'"><span>训练模型</span></button>
+            <button class="custom-btn btn" onclick="window.location.href='/video_generation'"><span>视频生成</span></button>
+            <button class="custom-btn btn" onclick="window.location.href='/chat_system'"><span>人机对话</span></button>
         </div>
     </div>
     <div class="footer">© 2025 DATA HAMMER LAB</div>
+
+    <script>
+        // 页面加载时，应用上次保存的皮肤
+        const savedSkin = localStorage.getItem('skin');
+        if (savedSkin) {
+            const body = document.getElementById('mainBody');
+            body.classList.remove('dark-theme', 'light-theme');
+            body.classList.add(savedSkin);
+        }
+
+        // 切换皮肤并保存到 localStorage
+        function toggleTheme() {
+            const body = document.getElementById('mainBody');
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                body.classList.add('light-theme');
+                localStorage.setItem('skin', 'light-theme');
+            } else {
+                body.classList.remove('light-theme');
+                body.classList.add('dark-theme');
+                localStorage.setItem('skin', 'dark-theme');
+            }
+        }
+
+    </script>
 </body>
 </html>

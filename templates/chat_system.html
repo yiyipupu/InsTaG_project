@@ -1,378 +1,326 @@
 <!DOCTYPE html>
 <html lang="zh">
-
 <head>
-    <meta charset="UTF-8">
-    <title>实时对话系统</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        body {
-            font-family: 'Microsoft YaHei', sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
+  <meta charset="UTF-8">
+  <title>实时对话系统</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-        h2 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-        }
+  <style>
+    body.subpage-bg {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-        .video-page-container {
-            display: flex;
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
+    /* ===== 顶部栏 ===== */
+    .subpage-header {
+      width: 100%;
+      padding: 16px 20px 0 12px; /* 左侧更贴边 */
+      display: flex;
+      align-items: center;
+    }
 
-        .video-display {
-            flex: 1;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    .subpage-header h2 {
+      flex: 1;
+      text-align: center;
+      font-family: 'Audiowide', cursive;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      margin: 0;
+    }
 
-        .video-display video {
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
-        }
+    /* 返回按钮（系统级靠左） */
+    .back-btn {
+      padding: 8px 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid;
+      background: transparent;
+      transition: all 0.25s ease;
+    }
 
-        .form-section {
-            flex: 1;
-            padding: 20px;
-            background: #f9f9f9;
-            border-left: 1px solid #eee;
-        }
+    body.dark-theme .back-btn {
+      color: #00e5ff;
+      border-color: #00e5ff;
+    }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+    body.dark-theme .back-btn:hover {
+      background: #00e5ff;
+      color: #000;
+    }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
+    body.light-theme .back-btn {
+      color: #7b2cbf;
+      border-color: #7b2cbf;
+    }
 
-        select, input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
+    body.light-theme .back-btn:hover {
+      background: #7b2cbf;
+      color: #fff;
+    }
 
-        .generate-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+    /* ===== 主体区域 ===== */
+    .video-page-container {
+      flex: 1;
+      width: 100%;
+      max-width: 1600px; /* 整体更宽 */
+      margin: 0 auto;
+      padding: 30px 32px 50px;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr; /* 视频更大 */
+      gap: 40px;
+    }
+    /* ===== 视频卡片（长方形） ===== */
+    .video-display {
+      padding: 24px;
+      border-radius: 14px;
+      display: flex;
+      flex-direction:column;
+      gap:20px;
+    }
 
-        .generate-btn:hover {
-            background-color: #2980b9;
-        }
+    body.dark-theme .video-display {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(0,229,255,0.35);
+    }
 
-        .voice-recorder {
-            margin-top: 20px;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
+    body.light-theme .video-display {
+      background: rgba(255,255,255,0.85);
+      border: 2px solid rgba(123,44,191,0.35);
+    }
 
-        .recorder-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
+    .video-display video {
+      width: 100%;
+      height: 100%;
+      max-height: 520px; /* 视频明显变大 */
+      border-radius: 10px;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+    }
 
-        .record-btn {
-            padding: 12px 24px;
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin: 0 auto 15px;
-        }
+    /* ===== 表单卡片（长方形） ===== */
+    .form-section {
+      padding: 32px 34px;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between; /* 占满高度 */
+    }
 
-        .record-btn:hover {
-            background-color: #c0392b;
-            transform: scale(1.05);
-        }
+    body.dark-theme .form-section {
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(244,244,10,0.4);
+    }
 
-        .record-btn.recording {
-            background-color: #2ecc71;
-            animation: pulse 1.5s infinite;
-        }
+    body.light-theme .form-section {
+      background: rgba(255,255,255,0.92);
+      border: 2px solid rgba(240,29,145,0.4);
+    }
 
-        .record-btn.recording:hover {
-            background-color: #27ae60;
-        }
+    /* ===== 表单字体整体放大 ===== */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
 
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
-            }
-        }
+    .form-group label {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
 
-        .timer {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin: 15px 0;
-        }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 1.05rem;
+    }
 
-        .recording-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin: 10px 0;
-        }
+    body.dark-theme .form-group input,
+    body.dark-theme .form-group select,
+    body.dark-theme .form-group textarea {
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
 
-        .recording-dot {
-            width: 12px;
-            height: 12px;
-            background-color: #e74c3c;
-            border-radius: 50%;
-            animation: blink 1.5s infinite;
-        }
+    body.light-theme .form-group input,
+    body.light-theme .form-group select,
+    body.light-theme .form-group textarea {
+      background: #fff;
+      color: #333;
+      border: 1px solid rgba(0,0,0,0.25);
+    }
 
-        @keyframes blink {
-            0%, 50% {
-                opacity: 1;
-            }
-            51%, 100% {
-                opacity: 0;
-            }
-        }
+    textarea {
+      min-height: 140px;
+    }
 
-        .status-message {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #7f8c8d;
-        }
-    </style>
+    /* ===== 开始训练按钮（强反馈） ===== */
+    .generate-btn {
+      margin-top: 10px;
+      width: 220px;
+      height: 50px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+
+    body.dark-theme .generate-btn {
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      color: #fff;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.4);
+    }
+
+    body.light-theme .generate-btn {
+      background: linear-gradient(135deg, #f48fb1, #ce93d8);
+      color: #333;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.25);
+    }
+
+    /* hover */
+    .generate-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    /* active（点击瞬间） */
+    .generate-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+      filter: brightness(0.95);
+    }
+
+    /* ===== 进度条 ===== */
+    .progress-wrapper {
+      margin-top: 14px;
+    }
+
+    .progress-text {
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 18px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.25);
+    }
+
+    .progress-inner {
+      height: 100%;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    body.dark-theme .progress-inner {
+      background: linear-gradient(90deg, #00e5ff, #f4f40a);
+    }
+
+    body.light-theme .progress-inner {
+      background: linear-gradient(90deg, #7b2cbf, #f01d91);
+    }
+
+    @media (max-width: 1100px) {
+      .video-page-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 
-<body class="subpage-bg">
+<body id="pageBody" class="subpage-bg">
+  <header class="subpage-header">
+    <button class="back-btn" onclick="history.back()">← 返回</button>
     <h2>实时对话系统</h2>
-    <div class="video-page-container">
-        <div class="video-display">
-            <!-- 语音录制器 -->
-            <div class="voice-recorder">
-                <button id="recordButton" class="record-btn">
-                    <span>●</span> 开始录音
-                </button>
-                <div class="timer" id="timer">00:00</div>
-                <div class="recording-indicator" id="recordingIndicator" style="display: none;">
-                    <div class="recording-dot"></div>
-                    <span>正在录音...</span>
-                </div>
-                <div class="status-message" id="statusMessage">准备录音</div>
-            </div>
-            <!-- 左侧视频显示 -->
-            <video id="chatVideo" controls width="420">
-                <source src="{{ url_for('static', filename='videos/sample.mp4') }}" type="video/mp4">
-            </video>
+  </header>
+
+  <main class="video-page-container">
+    <section class="video-display">
+      <div class="voice-recorder">
+        <button id="recordButton" class="record-btn">● 开始录音</button>
+        <div id="timer">00:00</div>
+      </div>
+      <video id="chatVideo" controls>
+        <source src="{{ url_for('static', filename='videos/sample.mp4') }}">
+      </video>
+    </section>
+
+    <section class="form-section">
+      <form id="chatForm">
+        <div class="form-group">
+          <label>模型名称</label>
+          <select name="model_name">
+            <option>Model 1</option>
+            <option>Model 2</option>
+            <option>SyncTalk</option>
+          </select>
         </div>
 
-        <!-- 右侧参数区 -->
-        <div class="form-section">
-            <form id="chatForm">
-                <div class="form-group">
-                    <label>模型名称</label>
-                    <select name="model_name">
-                        <option value="model1">Model 1</option>
-                        <option value="model2">Model 2</option>
-                        <option value="SyncTalk">SyncTalk</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>模型目录地址</label>
-                    <input type="text" name="model_param" placeholder="请输入模型目录路径">
-                </div>
-
-                <div class="form-group">
-                    <label>语音克隆模型名称</label>
-                    <select name="voice_clone">
-                        <option value="cloneA">Voice Clone A</option>
-                        <option value="cloneB">Voice Clone B</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>对话API选择</label>
-                    <select name="api_choice">
-                        <option value="openai">OpenAI API</option>
-                        <option value="azure">Azure Speech API</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="generate-btn">🎤 开始对话</button>
-            </form>
+        <div class="form-group">
+          <label>模型目录地址</label>
+          <input type="text" name="model_param">
         </div>
-    </div>
 
-    <script>
-        // 语音录制功能
-        let mediaRecorder;
-        let audioChunks = [];
-        let isRecording = false;
-        let startTime;
-        let timerInterval;
-        
-        const recordButton = document.getElementById('recordButton');
-        const timerDisplay = document.getElementById('timer');
-        const recordingIndicator = document.getElementById('recordingIndicator');
-        const statusMessage = document.getElementById('statusMessage');
-        
-        // 格式化时间显示
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-        
-        // 更新计时器
-        function updateTimer() {
-            const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-            timerDisplay.textContent = formatTime(elapsedSeconds);
-        }
-        
-        // 开始录音
-        async function startRecording() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-                
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-                
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    
-                    // 创建FormData并发送到服务器
-                    const formData = new FormData();
-                    formData.append('audio', audioBlob, 'input.wav');
-                    
-                    fetch('/save_audio', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            statusMessage.textContent = '录音已结束';
-                        } else {
-                            statusMessage.textContent = '保存录音失败';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('保存录音错误:', error);
-                        statusMessage.textContent = '保存录音时出错';
-                    });
-                    
-                    // 停止所有音频轨道
-                    stream.getTracks().forEach(track => track.stop());
-                };
-                
-                mediaRecorder.start();
-                isRecording = true;
-                recordButton.innerHTML = '<span>■</span> 停止录音';
-                recordButton.classList.add('recording');
-                recordingIndicator.style.display = 'flex';
-                statusMessage.textContent = '正在录音...';
-                
-                // 启动计时器
-                startTime = Date.now();
-                timerInterval = setInterval(updateTimer, 1000);
-                
-            } catch (error) {
-                console.error('获取麦克风权限失败:', error);
-                statusMessage.textContent = '无法访问麦克风，请检查权限设置';
-            }
-        }
-        
-        // 停止录音
-        function stopRecording() {
-            if (mediaRecorder && isRecording) {
-                mediaRecorder.stop();
-                isRecording = false;
-                recordButton.innerHTML = '<span>●</span> 开始录音';
-                recordButton.classList.remove('recording');
-                recordingIndicator.style.display = 'none';
-                statusMessage.textContent = '录音完成，正在保存...';
-                
-                // 停止计时器
-                clearInterval(timerInterval);
-            }
-        }
-        
-        // 录音按钮点击事件
-        recordButton.addEventListener('click', () => {
-            if (!isRecording) {
-                startRecording();
-            } else {
-                stopRecording();
-            }
-        });
-        
-        document.getElementById('chatForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const formData = new FormData(this);
+        <div class="form-group">
+          <label>语音克隆模型</label>
+          <select name="voice_clone">
+            <option>Clone A</option>
+            <option>Clone B</option>
+          </select>
+        </div>
 
-            fetch('/chat_system', {
-                method: 'POST',
-                body: formData
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        const videoEl = document.getElementById('chatVideo');
-                        const newSrc = data.video_path + '?t=' + new Date().getTime();
-                        videoEl.src = newSrc;
-                        videoEl.load();
-                        videoEl.play();
-                        alert('对话完成！');
-                    }
-                })
-                .catch(err => console.error('错误:', err));
-        });
-    </script>
+        <div class="form-group">
+          <label>对话 API</label>
+          <select name="api_choice">
+            <option>OpenAI</option>
+            <option>Azure</option>
+          </select>
+        </div>
+
+        <button class="generate-btn" type="submit">🎤 开始对话</button>
+        <div class="progress-wrapper">
+          <div class="progress-text" id="progressText">等待开始对话</div>
+          <div class="progress-bar">
+            <div class="progress-inner" id="progressInner"></div>
+         </div>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const skin = localStorage.getItem('skin') || 'dark-theme';
+    document.getElementById('pageBody').classList.add(skin);
+
+    const progressInner = document.getElementById('progressInner');
+    const progressText = document.getElementById('progressText');
+
+    document.getElementById('chatForm').addEventListener('submit', e => {
+    e.preventDefault();
+
+    let p = 0;
+    progressText.innerText = '对话中：0%';
+
+    const timer = setInterval(() => {
+        p += Math.floor(Math.random() * 6) + 4;
+        if (p >= 100) {
+        p = 100;
+        clearInterval(timer);
+        progressText.innerText = '对话完成';
+        } else {
+        progressText.innerText = `对话中：${p}%`;
+        }
+        progressInner.style.width = p + '%';
+    }, 600);
+    });
+
+  </script>
 </body>
-
 </html>

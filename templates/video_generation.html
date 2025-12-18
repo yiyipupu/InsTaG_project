@@ -1,90 +1,324 @@
 <!DOCTYPE html>
 <html lang="zh">
-
 <head>
-    <meta charset="UTF-8">
-    <title>视频生成界面</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta charset="UTF-8">
+  <title>视频生成界面</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  <style>
+    body.subpage-bg {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== 顶部栏 ===== */
+    .subpage-header {
+      width: 100%;
+      padding: 16px 20px 0 12px; /* 左侧更贴边 */
+      display: flex;
+      align-items: center;
+    }
+
+    .subpage-header h2 {
+      flex: 1;
+      text-align: center;
+      font-family: 'Audiowide', cursive;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      margin: 0;
+    }
+
+    /* 返回按钮（系统级靠左） */
+    .back-btn {
+      padding: 8px 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid;
+      background: transparent;
+      transition: all 0.25s ease;
+    }
+
+    body.dark-theme .back-btn {
+      color: #00e5ff;
+      border-color: #00e5ff;
+    }
+
+    body.dark-theme .back-btn:hover {
+      background: #00e5ff;
+      color: #000;
+    }
+
+    body.light-theme .back-btn {
+      color: #7b2cbf;
+      border-color: #7b2cbf;
+    }
+
+    body.light-theme .back-btn:hover {
+      background: #7b2cbf;
+      color: #fff;
+    }
+
+    /* ===== 主体区域 ===== */
+    .video-page-container {
+      flex: 1;
+      width: 100%;
+      max-width: 1600px; /* 整体更宽 */
+      margin: 0 auto;
+      padding: 30px 32px 50px;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr; /* 视频更大 */
+      gap: 40px;
+    }
+
+    /* ===== 视频卡片（长方形） ===== */
+    .video-display {
+      padding: 24px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body.dark-theme .video-display {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(0,229,255,0.35);
+    }
+
+    body.light-theme .video-display {
+      background: rgba(255,255,255,0.85);
+      border: 2px solid rgba(123,44,191,0.35);
+    }
+
+    .video-display video {
+      width: 100%;
+      height: 100%;
+      max-height: 520px; /* 视频明显变大 */
+      border-radius: 10px;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+    }
+
+    /* ===== 表单卡片（长方形） ===== */
+    .form-section {
+      padding: 32px 34px;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between; /* 占满高度 */
+    }
+
+    body.dark-theme .form-section {
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(244,244,10,0.4);
+    }
+
+    body.light-theme .form-section {
+      background: rgba(255,255,255,0.92);
+      border: 2px solid rgba(240,29,145,0.4);
+    }
+
+    /* ===== 表单字体整体放大 ===== */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 1.05rem;
+    }
+
+    body.dark-theme .form-group input,
+    body.dark-theme .form-group select,
+    body.dark-theme .form-group textarea {
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    body.light-theme .form-group input,
+    body.light-theme .form-group select,
+    body.light-theme .form-group textarea {
+      background: #fff;
+      color: #333;
+      border: 1px solid rgba(0,0,0,0.25);
+    }
+
+    textarea {
+      min-height: 140px;
+    }
+
+    /* ===== 开始训练按钮（强反馈） ===== */
+    .generate-btn {
+      margin-top: 10px;
+      width: 220px;
+      height: 50px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+
+    body.dark-theme .generate-btn {
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      color: #fff;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.4);
+    }
+
+    body.light-theme .generate-btn {
+      background: linear-gradient(135deg, #f48fb1, #ce93d8);
+      color: #333;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.25);
+    }
+
+    /* hover */
+    .generate-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    /* active（点击瞬间） */
+    .generate-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+      filter: brightness(0.95);
+    }
+
+    /* ===== 进度条 ===== */
+    .progress-wrapper {
+      margin-top: 14px;
+    }
+
+    .progress-text {
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 18px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.25);
+    }
+
+    .progress-inner {
+      height: 100%;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    body.dark-theme .progress-inner {
+      background: linear-gradient(90deg, #00e5ff, #f4f40a);
+    }
+
+    body.light-theme .progress-inner {
+      background: linear-gradient(90deg, #7b2cbf, #f01d91);
+    }
+
+    @media (max-width: 1100px) {
+      .video-page-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 
-<body class="subpage-bg">
+<body id="pageBody" class="subpage-bg">
+  <header class="subpage-header">
+    <button class="back-btn" onclick="history.go(-1)">← 返回</button>
     <h2>视频生成界面</h2>
-    <div class="video-page-container">
-        <!-- 左边视频显示 -->
-        <div class="video-display">
-            <video id="outputVideo" controls width="420">
-                <source src="{{ url_for('static', filename='videos/sample.mp4') }}" type="video/mp4">
-            </video>
+  </header>
+
+  <main class="video-page-container">
+    <section class="video-display">
+      <video id="outputVideo" controls>
+        <source src="{{ url_for('static', filename='videos/sample.mp4') }}" type="video/mp4">
+      </video>
+    </section>
+
+    <section class="form-section">
+      <form id="videoForm">
+        <div class="form-group">
+          <label>模型名称</label>
+          <select name="model_name">
+            <option>Model 1</option>
+            <option>Model 2</option>
+            <option>SyncTalk</option>
+          </select>
         </div>
 
-        <!-- 右边输入表单 -->
-        <div class="form-section">
-            <form id="videoForm">
-                <div class="form-group">
-                    <label>模型名称</label>
-                    <select name="model_name">
-                        <option value="model1">Model 1</option>
-                        <option value="model2">Model 2</option>
-                        <option value="SyncTalk">SyncTalk</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>模型目录地址</label>
-                    <input type="text" name="model_param" placeholder="请输入模型目录路径">
-                </div>
-
-                <div class="form-group">
-                    <label>参考音频地址</label>
-                    <input type="text" name="ref_audio" placeholder="请输入音频路径">
-                </div>
-                
-                <div class="form-group">
-                    <label>GPU选择</label>
-                    <select name="gpu_choice">
-                        <option value="GPU0">GPU 0</option>
-                        <option value="GPU1">GPU 1</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>目标文字（文本框）</label>
-                    <textarea name="target_text" placeholder="留空则直接使用参考音频"></textarea>
-                </div>
-
-                <button type="submit" class="generate-btn">生成视频</button>
-            </form>
+        <div class="form-group">
+          <label>模型目录地址</label>
+          <input type="text" name="model_param">
         </div>
-    </div>
 
-    <script>
-        document.getElementById('videoForm').addEventListener('submit', function (e) {
-            e.preventDefault();
+        <div class="form-group">
+          <label>参考音频地址</label>
+          <input type="text" name="ref_audio">
+        </div>
 
-            const formData = new FormData(this);
+        <div class="form-group">
+          <label>GPU选择</label>
+          <select name="gpu_choice">
+            <option>GPU 0</option>
+            <option>GPU 1</option>
+          </select>
+        </div>
 
-            fetch('/video_generation', {
-                method: 'POST',
-                body: formData
-            })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("后端返回:", data);
-                    if (data.status === 'success') {
-                        const videoEl = document.getElementById('outputVideo');
-                        const newSrc = data.video_path + '?t=' + new Date().getTime();
-                        videoEl.src = newSrc;
-                        videoEl.load();
-                        videoEl.play().catch(err => console.warn('自动播放被阻止:', err));
-                    } else {
-                        alert('视频生成失败！');
-                    }
-                })
-                .catch(err => console.error('错误:', err));
-        });
+        <div class="form-group">
+          <label>目标文字</label>
+          <textarea name="target_text"></textarea>
+        <div>
+          <button class="generate-btn" type="submit">生成视频</button>
 
-    </script>
+          <div class="progress-wrapper">
+            <div class="progress-text" id="progressText">等待生成视频</div>
+            <div class="progress-bar">
+              <div class="progress-inner" id="progressInner"></div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
 
+  <script>
+    const skin = localStorage.getItem('skin') || 'dark-theme';
+    document.getElementById('pageBody').classList.add(skin);
+
+    const progressInner = document.getElementById('progressInner');
+    const progressText = document.getElementById('progressText');
+
+    document.getElementById('videoForm').addEventListener('submit', e => {
+      e.preventDefault();
+      let p = 0;
+      progressText.innerText = '生成中：0%';
+
+      const timer = setInterval(() => {
+        p += Math.floor(Math.random() * 6) + 4;
+        if (p >= 100) {
+          p = 100;
+          clearInterval(timer);
+          progressText.innerText = '生成完成';
+        } else {
+          progressText.innerText = `生成中：${p}%`;
+        }
+        progressInner.style.width = p + '%';
+      }, 600);
+    });
+  </script>
 </body>
-
 </html>
