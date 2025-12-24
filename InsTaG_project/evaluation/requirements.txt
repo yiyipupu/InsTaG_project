@@ -1,0 +1,9 @@
+numpy
+tqdm
+scikit-image
+opencv-python-headless
+pyiqa
+pytorch-fid
+pillow
+imageio
+imageio-ffmpeg

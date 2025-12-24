@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>模型训练界面</title>
+  <!-- 引入手写体字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+QingKe+HuangYou&family=Long+Cang&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/abstract/style.css') }}">
+
+</head>
+
+<body id="pageBody" class="subpage-bg">
+  <!-- 抽象背景文字层 -->
+  <div class="abstract-bg">
+    <div class="bg-text">抽象</div>
+    <div class="bg-text">AI在努力学习</div>
+    <div class="bg-text">别催 在学了</div>
+    <div class="bg-text">模型正在偷懒</div>
+    <div class="bg-text">训练中请投喂</div>
+    <div class="bg-text">这视频真好看</div>
+    <div class="bg-text">Epoch++</div>
+    <div class="bg-text">头发--</div>
+    <div class="bg-text">AI看不懂这段</div>
+    <div class="bg-text">正在模仿中</div>
+  </div>
+  
+  <header class="subpage-header">
+    <button class="back-btn" onclick="history.back()">
+      ← 溜了溜了
+    </button>
+    <h2>模型训练界面</h2>
+  </header>
+
+  <main class="video-page-container">
+    <section class="video-display">
+      <div class="video-label">👁️‍🗨️ 瞅瞅这个视频，AI要模仿ta</div>
+      <video id="trainVideo" controls>
+      </video>
+      <div class="funny-note">温馨提示：请选个表情丰富的视频，不然AI只会扑克脸</div>
+    </section>
+
+    <section class="form-section">
+      <form id="trainForm">
+        <div>
+          <div class="form-group">
+            <label>选个模型大哥</label>
+            <select name="model_choice">
+              <option>InsTaG</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>视频丢这儿</label>
+            <input type="text" name="ref_video" placeholder="比如：/videos/大聪明讲话.mp4">
+            <div class="hint">建议选择：说话清晰、表情丰富、没戴墨镜的视频</div>
+          </div>
+
+          <div class="form-group">
+            <label>Epoch（练几轮）</label>
+            <input type="number" name="epoch" min="1" value="10">
+            <div class="hint">数字越大越聪明，但也可能练傻（建议10-30）</div>
+          </div>
+
+          <div class="form-group">
+            <label>自定义参数（整点花的）</label>
+            <textarea name="custom_params" placeholder=""></textarea>
+            <div class="hint">写点AI能看懂的</div>
+          </div>
+        </div>
+
+        <div>
+          <button class="generate-btn" type="submit">
+            开练！
+          </button>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const skin = localStorage.getItem('skin') || 'dark-theme';
+    document.getElementById('pageBody').classList.add(skin);
+
+    const progressInner = document.getElementById('progressInner');
+    const progressText = document.getElementById('progressText');
+    const funnyQuotes = document.getElementById('funnyQuotes');
+
+    // 搞笑语录
+    const trainingQuotes = [
+      "AI：这人说话怎么这么多手势？",
+      "正在分析微表情... ta好像有点假笑",
+      "这段口音有点东西，学起来学起来",
+      "嘴型匹配中，感觉快要学会了",
+      "原来人类是这样说话的，有趣有趣",
+      "这段视频看了10遍，AI已会背",
+      "声音特征提取：这人可能刚喝完水",
+      "微表情分析：此时应该笑，但我笑不出来",
+      "学习进度：已经能模仿ta的咳嗽声了",
+      "最终成果：一个会说话的电子鹦鹉",
+      "AI：这段视频怎么没字幕，我瞎猜吧",
+      "正在学习如何优雅地翻白眼",
+      "这个人的发型... 学不来学不来",
+      "发现目标：ta说话前会先摸鼻子",
+      "AI笔记：人类说话喜欢加'嗯...'和'那个...'"
+    ];
+
+    // 训练状态描述
+    const statusMessages = {
+      0: "AI刚睡醒，还在揉眼睛",
+      30: "AI开始认真看视频了",
+      50: "AI觉得这人说话有点意思",
+      70: "AI在偷偷模仿嘴型",
+      85: "AI觉得自己快成演员了",
+      95: "AI在整理学习笔记",
+      100: "AI已出师，准备出道"
+    };
+
+  document.getElementById('trainForm').addEventListener('submit', e => {
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+  formData.delete('epoch');   // 不传给后端
+  const videoEl = document.getElementById('trainVideo');
+  const refVideoPath = formData.get('ref_video');
+
+  if (refVideoPath) {
+    const src = "/" + refVideoPath.replace(/\\/g, "/") + "?t=" + Date.now();
+    videoEl.src = src;
+    videoEl.load();
+    videoEl.play().catch(() => {
+      console.log("自动播放被浏览器拦截，需要用户手动点播放");
+    });
+  }
+
+  const btn = e.target.querySelector('button');
+  const originalText = btn.innerText;
+  btn.innerText = "⏳ 训练任务提交中...";
+  btn.disabled = true;
+
+  fetch('/model_training', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.innerText = originalText;
+    btn.disabled = false;
+
+    if (data.status === 'success') {
+      alert('✅ 训练任务已成功加入队列！');
+    } else {
+      alert('❌ 训练提交失败：' + (data.msg || '未知错误'));
+    }
+  })
+  .catch(err => {
+    console.error('错误:', err);
+    btn.innerText = originalText;
+    btn.disabled = false;
+    alert('系统连接错误');
+  });
+});
+
+  </script>
+</body>
+</html>

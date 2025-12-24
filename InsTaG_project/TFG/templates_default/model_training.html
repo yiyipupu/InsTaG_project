@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>模型训练界面</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/default/style.css') }}">
+
+</head>
+
+<body class="subpage-bg">
+<h2>模型训练界面</h2>
+
+<div class="video-page-container">
+
+    <!-- ================= 左侧：视频显示 ================= -->
+    <!-- 关键点：
+         1. 覆盖 style.css 里的 flex
+         2. 给 video 明确尺寸
+    -->
+    <div class="video-display" style="display:block;">
+        <video
+            id="trainVideo"
+            controls
+            width="420"
+            height="240"
+            style="display:block;">
+        </video>
+    </div>
+
+    <!-- ================= 右侧：参数表单 ================= -->
+    <div class="form-section">
+        <form id="trainForm">
+
+            <!-- 模型选择 -->
+            <div class="form-group">
+                <label>模型选择</label>
+                <select name="model_choice">
+                    <option value="InsTaG">InsTaG</option>
+                    <option value="SyncTalk">SyncTalk（预留）</option>
+                </select>
+            </div>
+
+            <!-- 参考视频 -->
+            <div class="form-group">
+                <label>参考视频/图像地址</label>
+                <input
+                    type="text"
+                    id="ref_video_input"
+                    name="ref_video"
+                    placeholder="例如：static/videos/input.mp4">
+            </div>
+
+            <!-- GPU 选择 -->
+            <div class="form-group">
+                <label>GPU选择</label>
+                <select name="gpu_choice">
+                    <option value="GPU0">GPU0</option>
+                    <option value="GPU1">GPU1</option>
+                </select>
+            </div>
+
+            <!-- 自定义参数 -->
+            <div class="form-group">
+                <label>自定义训练参数</label>
+                <textarea
+                    name="custom_params"
+                    placeholder="当前仅展示，不参与实际训练"></textarea>
+            </div>
+
+            <!-- 提交 -->
+            <button type="submit" class="generate-btn">
+                开始训练
+            </button>
+
+        </form>
+    </div>
+</div>
+
+<!-- ================= JS 逻辑 ================= -->
+<script>
+const refInput = document.getElementById("ref_video_input");
+const videoEl  = document.getElementById("trainVideo");
+const formEl   = document.getElementById("trainForm");
+
+/* ===== 输入参考视频 → 左侧立即预览 ===== */
+refInput.addEventListener("input", () => {
+    const path = refInput.value.trim();
+    if (!path) return;
+
+    const url = "/" + path.replace(/\\/g, "/") + "?t=" + Date.now();
+    videoEl.src = url;
+    videoEl.load();
+});
+
+/* ===== 提交训练（功能不受影响） ===== */
+formEl.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    fetch("/model_training", {
+        method: "POST",
+        body: new FormData(formEl)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("训练任务已成功提交到云端服务器");
+        } else {
+            alert("训练启动失败：" + (data.msg || "未知错误"));
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("无法连接后端服务");
+    });
+});
+</script>
+
+</body>
+</html>

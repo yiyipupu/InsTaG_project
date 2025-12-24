@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>DATA HAMMER GROUP TALKING SYSTEM</title>
+    <!-- 引入 Google Fonts 和手写体 -->
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Ma+Shan+Zheng&family=Long+Cang&display=swap" rel="stylesheet">
+    <!-- 引入外部 CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/abstract/style.css') }}">
+
+</head>
+<body id="mainBody" class="home dark-theme">
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <span class="theme-icon">🌓</span> 切换皮肤
+    </button>
+    
+    <!-- 抽象背景文字层 -->
+    <div class="abstract-bg">
+        <div class="bg-text">抽象</div>
+        <div class="bg-text">AI对话系统</div>
+        <div class="bg-text">脑子不在家</div>
+        <div class="bg-text">代码写得好</div>
+        <div class="bg-text">模型不会跑</div>
+        <div class="bg-text">AI在偷听</div>
+        <div class="bg-text">别说话</div>
+        <div class="bg-text">训练中</div>
+        <div class="bg-text">这个AI很皮</div>
+        <div class="bg-text">正在思考</div>
+    </div>
+    
+    <div class="container">
+        <h1>DATA HAMMER GROUP<br>TALKING SYSTEM</h1>
+        <div class="funny-subtitle">🎭 抽象版：给视频里的人装个AI脑子</div>
+        <div class="button-container">
+            <button class="custom-btn btn" onclick="window.location.href='/abstract/model_training'">
+                <span>🤖 训练模型</span>
+            </button>
+            <button class="custom-btn btn" onclick="window.location.href='/abstract/video_generation'">
+                <span>🎬 视频生成</span>
+            </button>
+            <button class="custom-btn btn" onclick="window.location.href='/abstract/chat_system'">
+                <span>💬 人机对话</span>
+            <button class="custom-btn btn" onclick="window.location.href='/main_index'">
+                <span>🏠 返回正常界面</span>
+            </button>
+
+            </button>
+        </div>
+        <div class="instructions">
+            <h3>使用指南</h3>
+            <div class="instruction-steps">
+                <div class="step">1. 选个视频，AI会学里面的人说话</div>
+                <div class="step">2. 录个声音，AI会模仿你的语气</div>
+                <div class="step">3. 开始训练，AI在后台偷偷努力</div>
+                <div class="step">4. 开始对话，跟电子人唠嗑吧！</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="footer-content">
+            © 2025 DATA HAMMER LAB · 抽象科技部门
+            <div class="footer-note">本系统可能产生过于真实的AI，请勿上当受骗</div>
+        </div>
+    </div>
+
+    <!-- 装饰性元素 -->
+    <div class="decorative-dots">
+        <span style="top: 10%; left: 5%; animation-delay: 0s;"></span>
+        <span style="top: 20%; left: 90%; animation-delay: 0.5s;"></span>
+        <span style="top: 70%; left: 15%; animation-delay: 1s;"></span>
+        <span style="top: 85%; left: 80%; animation-delay: 1.5s;"></span>
+        <span style="top: 40%; left: 50%; animation-delay: 2s;"></span>
+    </div>
+
+    <script>
+        // 页面加载时，应用上次保存的皮肤
+        const savedSkin = localStorage.getItem('skin') || 'dark-theme';
+        if (savedSkin) {
+            const body = document.getElementById('mainBody');
+            body.classList.remove('dark-theme', 'light-theme');
+            body.classList.add(savedSkin);
+        }
+
+        // 切换皮肤并保存到 localStorage
+        function toggleTheme() {
+            const body = document.getElementById('mainBody');
+            const themeIcon = document.querySelector('.theme-icon');
+            
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                body.classList.add('light-theme');
+                localStorage.setItem('skin', 'light-theme');
+                themeIcon.textContent = '☀️';
+                showNotification('切换到明亮模式，AI眼睛不会瞎');
+            } else {
+                body.classList.remove('light-theme');
+                body.classList.add('dark-theme');
+                localStorage.setItem('skin', 'dark-theme');
+                themeIcon.textContent = '🌓';
+                showNotification('切换到暗黑模式，AI开始偷懒');
+            }
+        }
+
+        // 显示通知
+        function showNotification(text) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = text;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 2000);
+        }
+
+        // 按钮悬停效果
+        document.querySelectorAll('.custom-btn').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                const emojis = ['🤖', '🎬', '💬', '🚀', '🎯', '✨', '🔥', '🎪'];
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                btn.querySelector('span').innerHTML = `${randomEmoji} ${btn.querySelector('span').textContent.slice(2)}`;
+            });
+        });
+    </script>
+</body>
+</html>

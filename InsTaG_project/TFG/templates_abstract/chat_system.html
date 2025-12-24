@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>实时对话系统</title>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+QingKe+HuangYou&family=Long+Cang&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/abstract/style.css') }}">
+</head>
+
+<body id="pageBody" class="subpage-bg">
+  <!-- 抽象背景文字层 -->
+  <div class="abstract-bg">
+    <div class="bg-text">抽象</div>
+    <div class="bg-text">AI在线陪聊</div>
+    <div class="bg-text">1元/分钟</div>
+    <div class="bg-text">人工智障</div>
+    <div class="bg-text">正在思考</div>
+    <div class="bg-text">你好</div>
+    <div class="bg-text">在吗</div>
+    <div class="bg-text">吃了吗</div>
+    <div class="bg-text">聊点啥</div>
+    <div class="bg-text">已读不回</div>
+  </div>
+
+  <header class="subpage-header">
+    <button class="back-btn" onclick="history.back()">
+      ← 聊不下去了
+    </button>
+    <h2>实时对话系统</h2>
+  </header>
+
+  <main class="video-page-container">
+    <section class="video-display">
+      <div class="chat-header">
+        <div class="ai-avatar">🤖</div>
+        <div class="chat-info">
+          <div class="ai-name">电子朋友 · 在线</div>
+          <div class="ai-status">状态：<span class="status-dot">●</span> 等待投喂对话</div>
+        </div>
+      </div>
+
+      <div class="voice-recorder">
+        <div id="timer">00:00</div>
+        <div class="recording-hint" id="recordingHint">点击开始，跟AI唠嗑</div>
+      </div>
+
+      <video id="chatVideo" controls>
+        <source src="{{ url_for('static', filename='videos/sample.mp4') }}" type="video/mp4">
+      </video>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="message ai-message">
+          <div class="message-content">嗨！我是你的电子朋友，想聊点什么？</div>
+          <div class="message-time">刚刚</div>
+        </div>
+        <div class="message ai-message">
+          <div class="message-content">我可以模仿视频里的人跟你聊天，是不是很神奇？</div>
+          <div class="message-time">刚刚</div>
+        </div>
+      </div>
+
+      <div class="funny-note">温馨提示：AI可能会说胡话，请勿当真</div>
+    </section>
+
+    <section class="form-section">
+      <form id="chatForm">
+        <div class="form-group">
+          <label>跟哪个AI聊</label>
+          <select name="model_name">
+            <option value="InsTaG">InsTaG</option>
+          </select>
+          <div class="hint">不同AI性格不同，有的能聊有的不能</div>
+        </div>
+
+        <div class="form-group">
+          <label>AI的身份证地址</label>
+          <input type="text" name="model_param" placeholder="请输入模型目录路径">
+          <div class="hint">就是AI模型文件在哪里</div>
+        </div>
+
+        <div class="form-group">
+          <label>用谁的声音聊</label>
+          <select name="voice_clone">
+            <option value="cloneA">Voice Clone A</option>
+            <option value="cloneB">Voice Clone B</option>
+          </select>
+          <div class="hint">选个你喜欢的声音，AI用这个声线说话</div>
+        </div>
+
+        <!-- ✅ 新增：说话风格（抽象文案，不破坏气质） -->
+        <div class="form-group">
+          <label>AI现在的精神状态</label>
+          <select name="style">
+            <option value="normal">像个正常人</option>
+            <option value="sarcastic">嘴有点毒</option>
+            <option value="warm">今天很温柔</option>
+          </select>
+          <div class="hint">别问，问就是情绪不稳定</div>
+        </div>
+
+        <button class="generate-btn" type="submit">
+          🎤开始对话
+        </button>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const skin = localStorage.getItem('skin') || 'dark-theme';
+    document.getElementById('pageBody').classList.add(skin);
+
+    const recordingHint = document.getElementById('recordingHint');
+    const timerDisplay = document.getElementById('timer');
+
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+    let startTime;
+    let timerInterval;
+    let isChatting = false;
+
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const min = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const sec = String(elapsed % 60).padStart(2, '0');
+      timerDisplay.textContent = `${min}:${sec}`;
+    }
+
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          const formData = new FormData();
+          formData.append('audio', audioBlob, 'input.wav');
+
+          const modelParam = document.querySelector('input[name="model_param"]').value || '';
+          const style = document.querySelector('select[name="style"]').value || 'normal';
+
+          formData.append('model_param', modelParam);
+          formData.append('style', style);
+
+          recordingHint.textContent = '正在识别并生成视频...';
+
+          fetch('/chat/start', {
+            method: 'POST',
+            body: formData
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === 'success') {
+              recordingHint.textContent = '对话完成';
+              const videoEl = document.getElementById('chatVideo');
+              videoEl.src = data.video_path + '?t=' + Date.now();
+              videoEl.load();
+              videoEl.play();
+            } else {
+              recordingHint.textContent = data.msg || '生成失败';
+            }
+          })
+          .finally(() => {
+            isChatting = false;
+          });
+
+          stream.getTracks().forEach(t => t.stop());
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        recordingHint.textContent = '正在录音...';
+
+        startTime = Date.now();
+        timerInterval = setInterval(updateTimer, 1000);
+
+        const audioContext = new AudioContext();
+        const analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.fftSize);
+        let silenceStart = Date.now();
+
+        function detectSilence() {
+          analyser.getByteTimeDomainData(dataArray);
+          const volume = dataArray.reduce((a, b) => a + Math.abs(b - 128), 0) / dataArray.length;
+          if (volume < 8 && Date.now() - silenceStart > 1200) {
+            mediaRecorder.stop();
+            clearInterval(timerInterval);
+            return;
+          }
+          requestAnimationFrame(detectSilence);
+        }
+        detectSilence();
+
+      } catch (e) {
+        recordingHint.textContent = '麦克风罢工了';
+      }
+    }
+
+    document.getElementById('chatForm').addEventListener('submit', e => {
+      e.preventDefault();
+      recordingHint.textContent = '正在准备录音...';
+      startRecording();
+    });
+  </script>
+</body>
+</html>

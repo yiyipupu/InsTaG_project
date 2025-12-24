@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>实时对话 - Zootopia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main/css/style.css') }}?v=2.0">
+</head>
+
+<body class="bg-chat">
+    <a href="/" class="nav-back">⬅ 返回首页</a>
+
+    <h2>🎤 动物城广播站 (Live Chat)</h2>
+
+    <div class="video-page-container">
+        <div class="video-display">
+
+            <!-- 状态提示 -->
+            <div id="statusMessage" style="margin-bottom:10px; color:#777; font-size:1.1rem;">
+                准备就绪
+            </div>
+
+            <!-- 录音计时器 -->
+            <div id="timer" style="font-size:1.5rem; font-weight:bold; color:#555; margin-bottom:10px;">
+                00:00
+            </div>
+
+            <!-- 视频播放 -->
+            <video id="chatVideo" controls>
+                <source src="{{ url_for('static', filename='videos/sample.mp4') }}" type="video/mp4">
+            </video>
+        </div>
+
+        <div class="form-section">
+            <form id="chatForm">
+                <div class="form-group">
+                    <label>📂 模型</label>
+                    <select name="model_name">
+                        <option value="InsTaG">InsTaG</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>🦊 形象 (Avatar)</label>
+                    <input type="text" name="model_param" placeholder="输入路径...">
+                </div>
+
+                <div class="form-group">
+                    <label>🗣️ 声音克隆 (Voice ID)</label>
+                    <select name="voice_clone">
+                        <option value="cloneA">Voice A (Cute)</option>
+                        <option value="cloneB">Voice B (Deep)</option>
+                    </select>
+                </div>
+
+                <!-- ✅ 新增：说话风格 -->
+                <div class="form-group">
+                    <label>🎭 说话风格</label>
+                    <select name="style">
+                        <option value="normal" selected>正常人</option>
+                        <option value="toxic">毒舌</option>
+                        <option value="warm">温暖型</option>
+                    </select>
+                </div>
+
+                <!-- ❌ 已删除：对话引擎 (API) -->
+
+                <button type="submit" class="generate-btn">💬 发起对话</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = []; 
+        let isRecording = false;
+        let startTime;
+        let timerInterval;
+        const timerDisplay = document.getElementById('timer');
+        const statusMessage = document.getElementById('statusMessage');
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimer() {
+            const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+            timerDisplay.textContent = formatTime(elapsedSeconds);
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const formData = new FormData();
+                    formData.append('audio', audioBlob, 'input.wav');
+
+                    const modelParam =
+                        document.querySelector('#chatForm input[name="model_param"]').value || '';
+                    formData.append('model_param', modelParam);
+
+                    // ✅ 新增：只传 style，不改任何其他逻辑
+                    const style =
+                        document.querySelector('#chatForm select[name="style"]').value || 'normal';
+                    formData.append('style', style);
+
+                    statusMessage.textContent = '正在识别并生成视频...';
+
+                    fetch('/chat/start', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            statusMessage.textContent = '对话完成';
+
+                            const videoEl = document.getElementById('chatVideo');
+                            videoEl.src = data.video_path + '?t=' + Date.now();
+                            videoEl.load();
+                            videoEl.play();
+                        }
+                        else if (data.status === 'pending') {
+                            statusMessage.textContent = data.msg || '视频仍在生成中，请稍后查看';
+                        }
+                        else {
+                            statusMessage.textContent = data.msg || '生成失败';
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        statusMessage.textContent = '请求出错';
+                    });
+
+                    stream.getTracks().forEach(t => t.stop());
+                    if (audioContext) {
+                        audioContext.close();
+                        audioContext = null;
+                    }
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                statusMessage.textContent = '正在录音...';
+
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+
+                const audioContext = new AudioContext();
+                const source = audioContext.createMediaStreamSource(stream);
+                const analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                source.connect(analyser);
+
+                const dataArray = new Uint8Array(analyser.fftSize);
+                let silenceStart = Date.now();
+                const silenceThreshold = 8;
+                const silenceDuration = 1200;
+
+                function detectSilence() {
+                    analyser.getByteTimeDomainData(dataArray);
+
+                    let sum = 0;
+                    for (let i = 0; i < dataArray.length; i++) {
+                        const v = dataArray[i] - 128;
+                        sum += Math.abs(v);
+                    }
+                    const volume = sum / dataArray.length;
+
+                    if (volume < silenceThreshold) {
+                        if (Date.now() - silenceStart > silenceDuration) {
+                            stopRecording();
+                            return;
+                        }
+                    } else {
+                        silenceStart = Date.now();
+                    }
+
+                    if (isRecording) {
+                        requestAnimationFrame(detectSilence);
+                    }
+                }
+
+                requestAnimationFrame(detectSilence);
+
+            } catch (err) {
+                console.error(err);
+                statusMessage.textContent = '无法访问麦克风';
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                isRecording = false;
+                mediaRecorder.stop();
+                clearInterval(timerInterval);
+                statusMessage.textContent = '录音结束，正在处理...';
+            }
+        }
+
+        document.getElementById('chatForm').addEventListener('submit', e => {
+            e.preventDefault();
+            statusMessage.textContent = '正在准备录音...';
+            startRecording();
+        });
+    </script>
+
+</body>
+</html>

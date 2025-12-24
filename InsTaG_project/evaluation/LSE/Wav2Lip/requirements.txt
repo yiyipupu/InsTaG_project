@@ -1,0 +1,1 @@
+pip install   numpy==1.19.5   librosa==0.8.1   numba==0.48   torch   torchvision   tqdm   opencv-python==4.5.5.64   scenedetect   python_speech_features

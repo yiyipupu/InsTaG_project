@@ -1,0 +1,137 @@
+/* style.css - 最终完美版 */
+
+:root {
+    --primary-blue: #3498db;
+    --primary-purple: #9b59b6;
+    --nick-orange: #ff9f43;
+    --zpd-dark: #2c3e50;
+    --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* 1. 全局设置 */
+body {
+    min-height: 100vh;
+    font-family: 'Nunito', 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 20px;
+    color: var(--zpd-dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #a18cd1;
+    background-position: center;
+    background-attachment: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+/* 页面背景图 */
+body.bg-home { background-image: linear-gradient(135deg, rgba(42, 93, 152, 0.5), rgba(155, 89, 182, 0.5)), url('../images/home_bg.jpg'); }
+body.bg-video { background-image: linear-gradient(135deg, rgba(230, 126, 34, 0.4), rgba(52, 152, 219, 0.4)), url('../images/video_bg.jpg'); }
+body.bg-train { background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(41, 128, 185, 0.4)), url('../images/train_bg.jpg'); }
+body.bg-chat { background-image: linear-gradient(135deg, rgba(142, 68, 173, 0.3), rgba(241, 196, 15, 0.3)), url('../images/chat_bg.jpg'); }
+
+/* 2. 呼吸光斑层 (保留你的测试成果) */
+.floating-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* 在背景之上 */
+    pointer-events: none;
+}
+
+.shape {
+    position: absolute;
+    border-radius: 50%;
+    /* 黄金参数：模糊50px，透明度0.8，既柔和又清晰 */
+    filter: blur(50px);
+    opacity: 0.8;
+    animation: floatAnimation 5s infinite alternate ease-in-out;
+}
+
+.shape-1 {
+    width: 300px; height: 300px;
+    background: var(--primary-blue);
+    top: -50px; left: -50px;
+}
+
+.shape-2 {
+    width: 250px; height: 250px;
+    background: var(--nick-orange);
+    bottom: -50px; right: -50px;
+}
+
+.shape-3 {
+    width: 200px; height: 200px;
+    background: var(--primary-purple);
+    top: 40%; left: 40%;
+}
+
+@keyframes floatAnimation {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    100% {
+        /* 移动 100px，并且旋转 20度，变大 1.2倍 */
+        transform: translate(100px, 50px) rotate(20deg) scale(1.2);
+    }
+}
+/* 3. 玻璃卡片 (黄金透明度 0.4) */
+.container, .video-page-container {
+    /* 🔴 这里是关键：0.4 既能看清字，又能透出光 */
+    background: rgba(255, 255, 255, 0.75);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 25px;
+    border: var(--glass-border);
+    box-shadow: var(--shadow);
+    padding: 40px;
+    max-width: 1100px;
+    width: 90%;
+    margin: 20px auto;
+    position: relative;
+    z-index: 10; /* 内容在光斑之上 */
+}
+
+/* 4. 其他通用样式 */
+h1, h2 { text-align: center; color: var(--zpd-dark); font-weight: 800; margin-bottom: 30px; text-shadow: 1px 1px 2px rgba(255,255,255,0.8); }
+h1 span { color: var(--primary-purple); }
+
+button, .generate-btn, .record-btn {
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-purple));
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    margin: 10px 5px;
+}
+button:hover, .generate-btn:hover { transform: translateY(-3px) scale(1.02); }
+
+.record-btn { background: linear-gradient(45deg, #ff6b6b, var(--nick-orange)); width: auto; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto 20px; }
+
+.video-page-container { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; }
+.video-display, .form-section { flex: 1; min-width: 300px; }
+video { width: 100%; border-radius: 15px; background: #000; border: 4px solid #fff; }
+
+.form-group { margin-bottom: 15px; }
+label { display: block; margin-bottom: 8px; font-weight: 700; color: #57606f; }
+input, select, textarea {
+    width: 100%; padding: 12px;
+    border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 12px; background: rgba(255,255,255,0.6);
+    font-size: 14px; box-sizing: border-box; transition: 0.3s;
+}
+input:focus, select:focus, textarea:focus { outline: none; background: #fff; border-color: var(--primary-blue); }
+.voice-recorder { background: rgba(255,255,255,0.5); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+.nav-back { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.4); color: #333; padding: 8px 15px; border-radius: 20px; text-decoration: none; font-weight: bold; z-index: 20; }
+.nav-back:hover { background: #fff; }

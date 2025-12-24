@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>视频生成界面</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/default/style.css') }}">
+
+</head>
+
+<body class="subpage-bg">
+<h2>视频生成界面</h2>
+
+<div class="video-page-container">
+
+    <!-- 左侧：视频显示（关键：覆盖 flex） -->
+    <div class="video-display" style="display:block;">
+        <video
+            id="outputVideo"
+            controls
+            width="420"
+            height="240"
+            style="display:block;">
+        </video>
+    </div>
+
+    <!-- 右侧：输入表单 -->
+    <div class="form-section">
+        <form id="videoForm">
+
+            <div class="form-group">
+                <label>模型名称</label>
+                <select name="model_name">
+                    <option value="InsTaG">InsTaG</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>模型目录地址</label>
+                <input
+                    type="text"
+                    name="model_param"
+                    value="InsTaG/test1_hu"
+                    readonly>
+            </div>
+
+            <div class="form-group">
+                <label>参考音频地址（音色）</label>
+                <input
+                    type="text"
+                    name="ref_audio"
+                    value="static/audios/prompt.wav"
+                    readonly>
+            </div>
+
+            <div class="form-group">
+                <label>GPU选择</label>
+                <select name="gpu_choice">
+                    <option value="GPU0">GPU0</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>目标文字</label>
+                <textarea
+                    name="target_text"
+                    placeholder="请输入希望模型说出的内容"></textarea>
+            </div>
+
+            <button type="submit" class="generate-btn">
+                生成视频
+            </button>
+
+        </form>
+    </div>
+</div>
+
+<script>
+const form = document.getElementById("videoForm");
+const video = document.getElementById("outputVideo");
+
+form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    fetch("/video_generation", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            video.src = "/" + data.video_path + "?t=" + Date.now();
+            video.load();
+            video.play();
+        } else {
+            alert(data.msg);
+        }
+    });
+});
+</script>
+
+
+</body>
+</html>

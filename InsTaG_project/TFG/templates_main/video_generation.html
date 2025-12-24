@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>视频生成 - Zootopia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main/css/style.css') }}?v=2.0">
+</head>
+
+<body class="bg-video">
+
+    <a href="/" class="nav-back">⬅ 返回首页</a>
+    <h2>🎬 视频生成界面</h2>
+    <div class="video-page-container">
+        <div class="video-display">
+            <video id="outputVideo" controls>
+</video>
+
+        </div>
+
+        <div class="form-section">
+            <form id="videoForm">
+                <div class="form-group">
+                    <label>模型名称</label>
+                    <select name="model_name">
+                    <option value="InsTaG">InsTaG</option>
+                </select>
+                </div>
+                <div class="form-group">
+                    <label>模型目录地址</label>
+                    <input type="text" name="model_param" placeholder="请输入模型目录路径">
+                </div>
+                <div class="form-group">
+                    <label>参考音频地址</label>
+                    <input type="text" name="ref_audio" placeholder="请输入音频路径">
+                </div>
+                <div class="form-group">
+                    <label>GPU选择</label>
+                    <select name="gpu_choice">
+                        <option value="GPU0">GPU 0</option>
+                        <option value="GPU1">GPU 1</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>目标文字</label>
+                    <textarea name="target_text" placeholder="留下你想说的话吧" rows="3"></textarea>
+                </div>
+                <button type="submit" class="generate-btn">✨ 生成视频</button>
+            </form>
+        </div>
+    </div>
+<script>
+document.getElementById('videoForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const formData = new FormData();
+
+    // =========================
+    // 显式读取表单字段
+    // =========================
+    const modelName   = this.querySelector('[name="model_name"]').value;
+    let modelParam    = this.querySelector('[name="model_param"]').value.trim();
+    const refAudio    = this.querySelector('[name="ref_audio"]').value;
+    const gpuChoice   = this.querySelector('[name="gpu_choice"]').value;
+    const targetText  = this.querySelector('[name="target_text"]').value;
+
+    // =========================
+    // 🔥 关键：model_param 兜底
+    // =========================
+    if (!modelParam) {
+        modelParam = "InsTaG/test1";   // 默认形象
+    }
+
+    // =========================
+    // 构造 FormData
+    // =========================
+    formData.append("model_name", modelName);
+    formData.append("model_param", modelParam);
+    formData.append("ref_audio", refAudio);
+    formData.append("gpu_choice", gpuChoice);
+    formData.append("target_text", targetText);
+
+    console.log("[DEBUG] submit video_generation:", {
+        model_name: modelName,
+        model_param: modelParam
+    });
+
+    fetch('/video_generation', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const videoEl = document.getElementById('outputVideo');
+            videoEl.src = data.video_path + '?t=' + Date.now();
+            videoEl.load();
+            videoEl.play();
+        } else {
+            alert(data.msg || '失败');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('请求失败');
+    });
+});
+</script>
+
+
+</body>
+</html>

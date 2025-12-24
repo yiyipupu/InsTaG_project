@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Zootopia AI Hub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main/css/style.css') }}?v=6.0">
+
+    </head>
+<body class="bg-home">
+
+
+    <div class="container" style="text-align: center; padding: 60px 40px;">
+        <h1 style="font-size: 2.5rem;">🦊 DATA HAMMER<br><span>ZOOTOPIA SYSTEM</span> 🐰</h1>
+        <p style="font-size: 1.2rem; color: #555; margin-bottom: 50px;">Try Everything! 探索无限可能的数字世界</p>
+
+        <div class="button-container">
+            <button onclick="window.location.href='/main/model_training'">🧠 训练模型 (Training)</button>
+            <button onclick="window.location.href='/main/video_generation'">🎬 视频生成 (Video)</button>
+            <button onclick="window.location.href='/main/chat_system'" style="background: linear-gradient(45deg, #ff9f43, #ff6b6b);">🎤 人机对话 (Chat)</button>
+            <button onclick="window.location.href='/abstract_index'">🎨 切换到抽象版</button>
+
+        </div>
+
+        <div class="footer" style="margin-top: 60px; color: rgba(0,0,0,0.3);">© 2025 Zootopia Tech Lab</div>
+    </div>
+
+</body>
+</html>

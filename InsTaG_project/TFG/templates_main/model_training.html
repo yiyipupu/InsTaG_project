@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>模型训练 - Zootopia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main/css/style.css') }}?v=2.0">
+</head>
+
+<body class="bg-train">
+    <a href="/" class="nav-back">⬅ 返回首页</a>
+
+    <h2>🏋️‍♀️ 警校训练营 (Model Training)</h2>
+
+    <div class="video-page-container">
+        <div class="video-display">
+            <video id="trainVideo" controls>
+            </video>
+            <p style="text-align: center; color: #666; margin-top: 10px;">训练素材预览</p>
+        </div>
+
+        <div class="form-section">
+            <form id="trainForm">
+                <div class="form-group">
+                    <label>🧬 核心模型 (Base Model)</label>
+                    <select name="model_choice">
+                       <option value="InsTaG">InsTaG</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>📺 参考视频/图像路径</label>
+                    <input
+                    type="text"
+                    id="ref_video_input"
+                    name="ref_video"
+                    placeholder="例如：static/videos/test1.mp4">
+                </div>
+
+                <div class="form-group">
+                    <label>⚙️ 硬件分配 (GPU)</label>
+                    <select name="gpu_choice">
+                    <option value="GPU0">GPU0</option>
+                    <option value="GPU1">GPU1</option>
+                </select>
+                </div>
+
+                <div class="form-group">
+                    <label>⏱️ 训练轮数 (Epochs)</label>
+                    <input type="number" name="epoch" min="1" value="10">
+                </div>
+
+                <div class="form-group">
+                    <label>🔧 高级参数 (Custom Params)</label>
+                    <textarea name="custom_params" rows="3" placeholder="无特殊需求请留空..."></textarea>
+                </div>
+
+                <button type="submit" class="generate-btn">🚀 启动训练 (Start Training)</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('trainForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            // 立即从表单获取视频路径并播放预览
+            const refVideoPath = formData.get('ref_video');
+            const videoEl = document.getElementById('trainVideo');
+            const btn = this.querySelector('button');
+
+            if (refVideoPath) {
+                const newSrc = "/" + refVideoPath.replace("\\", "/") + '?t=' + new Date().getTime();
+                videoEl.src = newSrc;
+                videoEl.load();
+                videoEl.play().catch(e => console.log('自动播放可能被阻止:', e));
+            }
+
+            // 简单的按钮反馈
+            const originalText = btn.innerText;
+            btn.innerText = "⏳ 训练任务提交中...";
+            btn.disabled = true;
+            formData.delete('epoch');
+            fetch('/model_training', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                if (data.status === 'success') {
+                    alert('✅ 训练任务已成功加入队列！');
+                } else {
+                    alert('❌ 训练提交失败：' + (data.msg || '未知错误'));
+                }
+            })
+            .catch(err => {
+                console.error('错误:', err);
+                btn.innerText = originalText;
+                btn.disabled = false;
+                alert('系统连接错误');
+            });
+        });
+    </script>
+</body>
+</html>

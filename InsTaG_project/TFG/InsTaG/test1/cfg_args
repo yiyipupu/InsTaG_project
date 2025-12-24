@@ -1,0 +1,1 @@
+Namespace(sh_degree=1, source_path='/root/project/InsTaG/data/1', model_path='output/test1_hu', images='images', resolution=-1, white_background=False, data_device='cpu', eval=False, audio='', init_num=5000, N_views=250, audio_extractor='hubert', type='mouth', preload=True, all_for_train=False)

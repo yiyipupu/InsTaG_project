@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>视频生成界面</title>
+  <!-- 引入手写体字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+QingKe+HuangYou&family=Long+Cang&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/abstract/style.css') }}">
+
+</head>
+
+<body id="pageBody" class="subpage-bg">
+  <!-- 抽象背景文字层 -->
+  <div class="abstract-bg">
+    <div class="bg-text">抽象</div>
+    <div class="bg-text">AI在拍小视频</div>
+    <div class="bg-text">视频渲染中</div>
+    <div class="bg-text">别急 在P了</div>
+    <div class="bg-text">GPU在冒烟</div>
+    <div class="bg-text">这个AI会演戏</div>
+    <div class="bg-text">嘴型对不上</div>
+    <div class="bg-text">重来一遍</div>
+    <div class="bg-text">正在对口型</div>
+    <div class="bg-text">马上就好</div>
+  </div>
+  
+  <header class="subpage-header">
+    <button class="back-btn" onclick="history.go(-1)">
+      ← 不玩了
+    </button>
+    <h2>视频生成界面</h2>
+  </header>
+
+  <main class="video-page-container">
+    <section class="video-display">
+      <div class="video-label">🎬 瞅瞅AI拍的小视频</div>
+      <video id="outputVideo" controls>
+      </video>
+      <div class="funny-note">温馨提示：如果嘴型对不上，可能是AI没学好</div>
+      <div class="video-stats">
+        <div class="stat-item">📊 视频质量：<span class="stat-value">抽象级</span></div>
+        <div class="stat-item">🎭 演技评分：<span class="stat-value">7.8/10</span></div>
+        <div class="stat-item">👄 口型匹配：<span class="stat-value">勉强能看</span></div>
+      </div>
+    </section>
+
+    <section class="form-section">
+      <form id="videoForm">
+        <div class="form-group">
+          <label>选个AI演员</label>
+         <select name="model_name">
+                    <option value="InsTaG">InsTaG</option>
+                </select>
+          <div class="hint">不同演员有不同演技，贵的可能更会演</div>
+        </div>
+
+        <div class="form-group">
+          <label>AI的家在哪里</label>
+          <input type="text" name="model_param" placeholder="请输入模型目录路径">
+          <div class="hint">就是之前训练好的模型放哪儿了</div>
+        </div>
+
+        <div class="form-group">
+          <label>给AI听听这个声音</label>
+         <input type="text" name="ref_audio" placeholder="请输入音频路径">
+          <div class="hint">AI会根据这个声音来对口型</div>
+        </div>
+
+        <div class="form-group">
+          <label>用哪个显卡跑</label>
+          <select name="gpu_choice">
+            <option value="GPU0">GPU 0（老黄家的）</option>
+            <option value="GPU1">GPU 1（苏妈家的）</option>
+            <option>我的手机（开玩笑的）</option>
+          </select>
+          <div class="hint">显卡越好，AI演戏越快</div>
+        </div>
+
+        <div class="form-group">
+            <label>🗣️ 让AI说这些话</label>
+            <textarea name="target_text" placeholder=""></textarea>
+            <div class="hint">写点人话</div>
+        </div>
+        
+        <div>
+          <button class="generate-btn" type="submit">开始拍片！</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+  const skin = localStorage.getItem('skin') || 'dark-theme';
+  document.getElementById('pageBody').classList.add(skin);
+  const videoEl = document.getElementById('outputVideo');
+
+  // 搞笑语录
+  const videoQuotes = [
+    "正在给AI画口红...",
+    "AI：这段台词谁写的？",
+    "嘴型计算中，感觉要嘴瓢",
+    "AI在练习表情管理",
+    "这段表演需要加点感情",
+    "AI要求加鸡腿",
+    "渲染到一半，AI想去厕所",
+    "这段演技可以拿奥斯卡...提名",
+    "AI：导演，能重来一遍吗？",
+    "终于对口型成功了！",
+    "AI偷偷改剧本",
+    "这段表演过于浮夸",
+    "AI觉得自己是影帝",
+    "嘴型终于对上了！感动",
+    "AI要求用替身"
+  ];
+
+  // 视频生成状态
+  const videoStatus = {
+    0: "AI演员正在化妆",
+    10: "AI在背台词",
+    25: "AI练习表情中",
+    40: "第一镜拍摄",
+    55: "导演喊卡，重来",
+    70: "对口型练习",
+    85: "最终拍摄",
+    95: "后期渲染",
+    100: "杀青！成片完成"
+  };
+
+  // 视频参数模拟（如果不需要也可以删掉）
+const fpsValues = [24, 25, 30, 60];
+const durationValues = [3, 5, 8, 10, 15];
+const performanceStates = ["划水中", "努力演", "演技爆发", "需要指导", "渐入佳境", "完美演绎"];
+
+document.getElementById('videoForm').addEventListener('submit', e => {
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+
+  // ⭐ 直接发起后端请求（无进度条）
+  fetch('/video_generation', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+
+      // ⭐ 更新视频
+      videoEl.src = data.video_path + '?t=' + Date.now();
+      videoEl.load();
+
+      // ⭐ 弹出完成提示
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      notification.innerHTML = '🎉 <strong>视频生成完成！</strong><br>AI的小作品已经准备好了！';
+      notification.style.position = 'fixed';
+      notification.style.top = '100px';
+      notification.style.left = '50%';
+      notification.style.transform = 'translateX(-50%)';
+      notification.style.zIndex = '9999';
+      notification.style.textAlign = 'center';
+      document.body.appendChild(notification);
+
+      setTimeout(() => notification.classList.add('show'), 10);
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => document.body.removeChild(notification), 300);
+      }, 3000);
+
+    } else {
+      alert("❌ 视频生成失败：" + (data.msg || "未知错误"));
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("❌ 请求失败，请检查后端服务");
+  });
+});
+
+// ======================
+// 视频播放交互（保留）
+// ======================
+videoEl.addEventListener('play', () => {
+  document.querySelector('.video-label').textContent = '🎬 AI正在现场直播！';
+  document.querySelector('.funny-note').textContent = '温馨提示：如果嘴型怪异，请多包涵，AI尽力了';
+});
+
+videoEl.addEventListener('pause', () => {
+  document.querySelector('.video-label').textContent = '🎬 AI中场休息';
+});
+
+videoEl.addEventListener('ended', () => {
+  document.querySelector('.video-label').textContent = '🎬 AI演出结束，谢谢观看！';
+  setTimeout(() => {
+    document.querySelector('.video-label').textContent = '🎬 瞅瞅AI拍的小视频';
+  }, 2000);
+});
+
+// 表单元素交互效果（保留）
+document.querySelectorAll('select, input, textarea').forEach(element => {
+  element.addEventListener('focus', () => {
+    element.style.transform = 'rotate(1.5deg) translateY(-3px)';
+    element.style.boxShadow = '0 5px 15px var(--shadow)';
+  });
+  
+  element.addEventListener('blur', () => {
+    element.style.transform = 'rotate(-0.5deg) translateY(0)';
+    element.style.boxShadow = 'inset 0 3px 6px rgba(0, 0, 0, 0.1)';
+  });
+});
+
+</script>
+  
+  <style>
+    /* 视频统计信息 */
+    .video-stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 15px;
+      border: 2px dashed var(--border);
+      transform: rotate(1deg);
+    }
+    
+    .stat-item {
+      font-size: 1rem;
+      color: var(--text);
+      font-weight: bold;
+    }
+    
+    .stat-value {
+      color: var(--accent);
+      font-family: 'Ma Shan Zheng', cursive;
+    }
+    
+    /* 视频参数显示 */
+    .video-params {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      transform: rotate(-0.5deg);
+    }
+    
+    .param-item {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+    
+    .param-item span {
+      color: var(--primary);
+      font-weight: bold;
+    }
+  </style>
+</body>
+</html>
